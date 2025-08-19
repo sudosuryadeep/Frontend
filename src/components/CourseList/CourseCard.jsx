@@ -1,13 +1,13 @@
 import { useAuth } from "../../context/AuthContext";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { getRatings } from "../../api";
 import RatingForm from "../Rating/RatingForm";
+import { FaPlay } from "react-icons/fa";
 
 const CourseCard = ({ course }) => {
   const { user } = useAuth();
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [count, setCount] = useState(3);
+  const [showConfirm, setShowConfirm] = useState(false); // To show confirmation modal
   const [ratingVisible, setRatingVisible] = useState(false);
   const [ratingsData, setRatingsData] = useState({ avg: 0, count: 0 });
 
@@ -31,112 +31,111 @@ const CourseCard = ({ course }) => {
     fetchRatings();
   }, [course.videoId]);
 
-  // Countdown for modal
-  useEffect(() => {
-    if (!showConfirm) return;
-    setCount(3);
-    const id = setInterval(() => setCount((c) => (c > 0 ? c - 1 : 0)), 1000);
-    return () => clearInterval(id);
-  }, [showConfirm]);
-
-  // Disable scroll when modal is open
-  useEffect(() => {
-    document.body.style.overflow = showConfirm ? "hidden" : "auto";
-  }, [showConfirm]);
-
-  const canOpen = useMemo(() => count === 0, [count]);
-
+  // Open lecture directly after confirmation
   const openLecture = () => {
     window.open(`https://www.youtube.com/watch?v=${course.videoId}`, "_blank");
-    setShowConfirm(false);
-    setRatingVisible(true);
+    setShowConfirm(false); // Close the confirmation modal
+    setRatingVisible(true); // Show rating form after watching if logged in
   };
 
+  // Trigger confirmation modal
   const handleWatchClick = () => {
-    if (!user) {
-      alert("Please login to watch this course");
-      return;
-    }
-    setShowConfirm(true);
+    setShowConfirm(true); // Show confirmation modal when user clicks "Watch"
   };
 
   return (
-    <div className="border shadow rounded-xl p-3 bg-white transition-transform transform hover:scale-105 hover:shadow-lg">
-      {/* Thumbnail with Watch overlay */}
-      <div className="relative">
+    <div className="border shadow-md rounded-2xl p-4 bg-white transition-transform transform hover:scale-105 hover:shadow-xl">
+      {/* Thumbnail with Play overlay */}
+      <div className="relative group cursor-pointer" onClick={handleWatchClick}>
         <img
           src={course.thumbnail}
           alt={course.title}
-          className={`w-full h-40 object-cover rounded-lg mb-2 transition-opacity ${
+          className={`w-full h-48 object-cover rounded-xl transition-opacity ${
             isImageLoading ? "opacity-50" : "opacity-100"
           }`}
           onLoad={() => setIsImageLoading(false)}
         />
         {isImageLoading && (
-          <div className="absolute inset-0 flex justify-center items-center bg-gray-200 rounded-lg">
+          <div className="absolute inset-0 flex justify-center items-center bg-gray-200 rounded-xl">
             <span className="text-gray-500">Loading...</span>
           </div>
         )}
-        {/* Watch Button */}
-        <button
-          onClick={handleWatchClick}
-          className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-1 rounded-xl hover:bg-blue-700"
-        >
-          Watch
-        </button>
+
+        {/* Overlay Play Button */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40 rounded-xl">
+          <button className="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition">
+            <FaPlay size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Card Info */}
-      <h3 className="text-lg font-semibold truncate">{course.title}</h3>
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-600">{course.category}</p>
-        <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
-          {course.level}
-        </span>
+      <div className="mt-3">
+        <h3 className="text-lg font-semibold line-clamp-1">{course.title}</h3>
+        <div className="flex justify-between items-center mt-1">
+          <p className="text-sm text-gray-600">{course.category}</p>
+          <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
+            {course.level}
+          </span>
+        </div>
+        <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+          {course.description}
+        </p>
+
+        {/* Ratings */}
+        <div className="flex items-center mt-3">
+          <span className="text-yellow-500">⭐ {ratingsData.avg}</span>
+          <span className="ml-1 text-sm text-gray-500">
+            ({ratingsData.count} reviews)
+          </span>
+        </div>
+
+        {/* Rating Form */}
+        {ratingVisible && (
+          <div className="mt-3">
+            <RatingForm videoId={course.videoId} onRated={fetchRatings} />
+          </div>
+        )}
       </div>
-      <p className="text-sm text-gray-500 mt-2">{course.description}</p>
 
-      {/* Ratings */}
-      <div className="flex items-center mt-2">
-        <span className="text-yellow-500">⭐ {ratingsData.avg}</span>
-        <span className="ml-1 text-sm text-gray-500">
-          ({ratingsData.count} reviews)
-        </span>
-      </div>
-
-      {/* Rating Form */}
-      {ratingVisible && (
-        <RatingForm videoId={course.videoId} onRated={fetchRatings} />
-      )}
-
-      {/* Modal */}
+      {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold">Ready to watch?</h3>
-            <p className="mt-1 text-sm text-gray-600">
-              You will watch this lecture on YouTube. After watching, please
-              leave a quick rating 🙌
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200 relative">
+            {/* Heading */}
+            <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Ready to watch?
+            </h3>
+
+            {/* Subtext */}
+            <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+              You will watch this lecture on{" "}
+              <span className="font-medium">YouTube</span>.
+              {user ? (
+                <> After watching, please leave a quick rating 🙌</>
+              ) : (
+                <>
+                  {" "}
+                  You’re watching as a guest. Login to save progress and leave a
+                  rating 🙌
+                </>
+              )}
             </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm text-gray-500">
-                Opening in: {count}s
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="rounded-xl border px-3 py-2 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={openLecture}
-                  disabled={!canOpen}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-white disabled:opacity-50 hover:enabled:bg-blue-700"
-                >
-                  Open Lecture
-                </button>
-              </div>
+
+            {/* Buttons */}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="rounded-xl border px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={openLecture}
+                className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-white shadow-md hover:enabled:from-blue-700 hover:enabled:to-indigo-700 transition"
+              >
+                Open Lecture
+              </button>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Logo = () => (
   <Link
-    to="/all"
+    to="/"
     className="flex items-center space-x-3 group"
   >
     {/* Icon */}

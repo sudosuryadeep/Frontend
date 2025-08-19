@@ -8,7 +8,7 @@ const active =
   "text-blue-600 after:content-[''] after:absolute after:-bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-[3px] after:bg-blue-600 after:rounded-full";
 const hoverEffect = "hover:text-blue-500 hover:scale-105 hover:after:w-12";
 
-const NavLinks = () => {
+const NavLinks = ({ direction = "row" }) => {
   const { user } = useAuth();
 
   const dashboardLink =
@@ -18,8 +18,13 @@ const NavLinks = () => {
       ? "/dashboard"
       : "/login";
 
+  const layoutClasses =
+    direction === "column"
+      ? "flex-col items-start gap-4"
+      : "flex-row items-center gap-8";
+
   return (
-    <nav className="flex items-center gap-8">
+    <nav className={`flex ${layoutClasses}`}>
       <NavLink
         to="/"
         end
@@ -58,5 +63,5 @@ const NavLinks = () => {
   );
 };
 
-export default NavLinks;
 
+export default NavLinks;

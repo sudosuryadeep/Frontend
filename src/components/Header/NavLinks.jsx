@@ -1,22 +1,22 @@
 import { NavLink } from "react-router-dom";
 import { FaHome, FaFire, FaTachometerAlt } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext"; // import your AuthContext
+import { useAuth } from "../../context/AuthContext";
 
 const linkBase =
-  "px-5 py-2 rounded-lg text-lg font-medium transition-all duration-300 ease-in-out";
-const active = "bg-blue-500 text-white border-b-4 border-blue-600 shadow-md";
-const hoverEffect = "hover:bg-gray-100 hover:text-blue-500 hover:scale-105";
+  "relative px-5 py-2 rounded-lg text-lg font-semibold transition-all duration-300 ease-in-out flex items-center group";
+const active =
+  "text-blue-600 after:content-[''] after:absolute after:-bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-[3px] after:bg-blue-600 after:rounded-full";
+const hoverEffect = "hover:text-blue-500 hover:scale-105 hover:after:w-12";
 
 const NavLinks = () => {
-  const { user } = useAuth(); // get logged-in user
+  const { user } = useAuth();
 
-  // Determine the correct dashboard link based on the user's role
   const dashboardLink =
     user?.role === "admin"
       ? "/admin"
       : user?.role === "user"
       ? "/dashboard"
-      : "/login"; 
+      : "/login";
 
   return (
     <nav className="flex items-center gap-8">
@@ -27,25 +27,31 @@ const NavLinks = () => {
           `${linkBase} ${isActive ? active : ""} ${hoverEffect}`
         }
       >
-        <FaHome className="inline-block mr-2" />
+        <FaHome className="mr-2 group-hover:rotate-6 transition-transform duration-300" />
         Home
       </NavLink>
+
       <NavLink
         to="/trending"
         className={({ isActive }) =>
           `${linkBase} ${isActive ? active : ""} ${hoverEffect}`
         }
       >
-        <FaFire className="inline-block mr-2" />
-        Popular Courses
+        <FaFire className="mr-2 text-orange-500 group-hover:scale-110 transition-transform duration-300" />
+        Popular
       </NavLink>
+
       <NavLink
-        to={dashboardLink} // Dynamic link based on user role
+        to={dashboardLink}
         className={({ isActive }) =>
           `${linkBase} ${isActive ? active : ""} ${hoverEffect}`
         }
       >
-        <FaTachometerAlt className="inline-block mr-2" />
+        <FaTachometerAlt
+          className={`mr-2 transition-transform duration-300 group-hover:rotate-3 ${
+            user?.role === "admin" ? "text-amber-600" : "text-green-600"
+          }`}
+        />
         Dashboard
       </NavLink>
     </nav>
@@ -53,3 +59,4 @@ const NavLinks = () => {
 };
 
 export default NavLinks;
+

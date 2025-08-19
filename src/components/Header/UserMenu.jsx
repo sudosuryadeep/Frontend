@@ -1,9 +1,12 @@
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa"; // Profile icon
+import { FaUserCircle } from "react-icons/fa";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 const UserMenu = () => {
   const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
@@ -11,16 +14,11 @@ const UserMenu = () => {
     }
   };
 
-  const handleProfileClick = () => {
-    // Open the profile page in a new tab
-    window.open("/profile", "_blank"); // _blank will open it in a new tab
-  };
-
   if (!user) {
     return (
       <Link
         to="/login"
-        className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:opacity-90"
+        className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
       >
         Login
       </Link>
@@ -28,13 +26,13 @@ const UserMenu = () => {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      {/* Profile icon and info */}
-      <div
-        className="cursor-pointer flex items-center gap-2"
-        onClick={handleProfileClick} // Open profile in new tab on click
+    <div className="relative">
+      {/* Profile + Username */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-100 transition"
       >
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
           {user.avatar ? (
             <img
               src={user.avatar}
@@ -42,21 +40,34 @@ const UserMenu = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <FaUserCircle className="text-gray-600 text-3xl" />
+            <FaUserCircle className="text-gray-600 text-2xl" />
           )}
         </div>
-        <div className="hidden sm:block text-sm">
-          <div className="font-semibold">{user.username || user.email}</div>
-        </div>
-      </div>
-
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="px-3 py-2 rounded-xl bg-gray-900 text-white hover:opacity-90"
-      >
-        Logout
+        <span className="hidden sm:block font-medium text-sm">
+          {user.username || user.email}
+        </span>
+        <ChevronDown size={16} className="text-gray-500" />
       </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl border py-2 animate-fade-in z-50">
+          <Link
+            to="/profile"
+            target="_blank"
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            onClick={() => setOpen(false)}
+          >
+            Profile
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </div>
   );
 };

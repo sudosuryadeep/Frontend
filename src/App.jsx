@@ -10,7 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
 import Home from "./pages/Home";
-import Login from "./pages/Login";
+import Login from "./pages/Auth/Login";
 import Register from "./pages/Register"; // Register Page
 import ForgotPassword from "./pages/ForgotPassword"; // Forgot Password Page
 import AddCourse from "./pages/AddCourses";

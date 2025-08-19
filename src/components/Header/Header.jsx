@@ -1,26 +1,35 @@
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { FaBars, FaTimes, FaSearch } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+
 import Logo from "./Logo";
 import NavLinks from "./NavLinks";
 import UserMenu from "./UserMenu";
 import SearchBar from "./SearchBar";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const [query, setQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (value) => {
     setQuery(value);
     if (value.trim()) {
-      // navigate(`${encodeURIComponent(value)}`);
+      navigate(`/search?q=${encodeURIComponent(value.trim())}`);
+      setIsSearchOpen(false); // close mobile search after submit
     }
   };
 
   const toggleMenu = () => {
+    if (isSearchOpen) setIsSearchOpen(false); // 👈 Close search if open
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleSearch = () => {
+    if (isMenuOpen) setIsMenuOpen(false); // 👈 Close menu if open
+    setIsSearchOpen(!isSearchOpen);
   };
 
   return (
@@ -30,14 +39,23 @@ const Header = () => {
         <div className="flex items-center gap-6">
           <Logo />
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav + Search */}
           <div className="hidden lg:flex items-center gap-6">
             <NavLinks />
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          {/* Mobile Hamburger */}
-          <div className="lg:hidden flex items-center">
+          {/* Mobile Icons */}
+          <div className="lg:hidden flex items-center gap-10">
+            {/* Search Icon */}
+            <button
+              onClick={toggleSearch}
+              className="text-gray-800 hover:scale-110 transition-transform"
+            >
+              <FaSearch size={20} />
+            </button>
+
+            {/* Menu Icon */}
             <button
               onClick={toggleMenu}
               className="text-gray-800 hover:scale-110 transition-transform"
@@ -51,7 +69,7 @@ const Header = () => {
         <UserMenu />
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -61,10 +79,25 @@ const Header = () => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="lg:hidden bg-white/95 backdrop-blur-md py-6 px-6 shadow-lg"
           >
-            <NavLinks />
+            <NavLinks direction="column" />
             <div className="mt-4">
               <SearchBar onSearch={handleSearch} />
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Search Bar Dropdown */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden px-4 py-3 bg-white shadow-md border-t z-30"
+          >
+            <SearchBar onSearch={handleSearch} autoFocus />
           </motion.div>
         )}
       </AnimatePresence>

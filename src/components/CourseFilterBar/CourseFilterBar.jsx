@@ -1,42 +1,61 @@
-import React, { memo } from "react";
+import React, { memo, useRef } from "react";
+import { motion } from "framer-motion";
 
 const categories = [
-  "All",
-  "React",
-  "DSA",
-  "Frontend",
-  "Backend",
-  "Python",
-  "NodeJS",
-  "C++",
-  "C",
-  "1st Year",
-  "2nd Year",
-  "3rd Year",
-  "4th Year",
+  { name: "All", icon: "🌍" },
+  { name: "React", icon: "⚛️" },
+  { name: "DSA", icon: "🧩" },
+  { name: "Frontend", icon: "🎨" },
+  { name: "Backend", icon: "🖥️" },
+  { name: "Python", icon: "🐍" },
+  { name: "NodeJS", icon: "🌱" },
+  { name: "C++", icon: "💠" },
+  { name: "C", icon: "🔤" },
+  { name: "1st Year", icon: "🥇" },
+  { name: "2nd Year", icon: "🥈" },
+  { name: "3rd Year", icon: "🥉" },
+  { name: "4th Year", icon: "🎓" },
 ];
 
 const CourseFilterBar = ({ selected, onSelect }) => {
+  const btnRefs = useRef({});
+
   const handleSelect = (category) => {
-    // If "All" is selected, reset the filter
     onSelect(category === "All" && selected === "All" ? "" : category);
+
+    // auto scroll to selected button
+    if (btnRefs.current[category]) {
+      btnRefs.current[category].scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
   };
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div
+      className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-snap-x"
+      role="tablist"
+      aria-label="Course Categories"
+    >
       {categories.map((cat) => (
-        <button
-          key={cat}
-          onClick={() => handleSelect(cat)}
-          aria-pressed={selected === cat}
-          className={`px-3 py-1 rounded-full text-sm border transition-all duration-200 ease-in-out ${
-            selected === cat
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-blue-600 border-gray-300"
-          } hover:bg-blue-100`}
+        <motion.button
+          key={cat.name}
+          ref={(el) => (btnRefs.current[cat.name] = el)} // store ref
+          onClick={() => handleSelect(cat.name)}
+          aria-pressed={selected === cat.name}
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 scroll-snap-start
+  ${
+    selected === cat.name
+      ? "bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 text-white shadow-md ring-2 ring-pink-400"
+      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+  }`}
         >
-          {cat}
-        </button>
+          <span>{cat.icon}</span> {cat.name}
+        </motion.button>
       ))}
     </div>
   );
